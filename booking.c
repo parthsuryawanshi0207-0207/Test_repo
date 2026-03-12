@@ -56,4 +56,46 @@ void bookTicket() {
             } else {
                 if (trains[i].seatsSleeper > 0) {
                     strcpy(newB->seatCategory, "Sleeper");
-                    newB->totalBill = trains
+                    newB->totalBill = trains[i].priceSleeper * 1.05;
+                    trains[i].seatsSleeper--; // Deduct seat
+                    generateBill(trains[i].priceSleeper, "Sleeper");
+                } else {
+                    printf("\nNo Sleeper seats available!"); return;
+                }
+            }
+
+            printf("\nBooking Successful! Your PNR is: %d\n", newB->pnr);
+            bookingCount++;
+            return;
+        }
+    }
+    printf("\nTrain not found.");
+}
+
+// Feature: Cancel Booking
+void cancelTicket() {
+    int pnrIn, found = 0;
+    printf("\nEnter PNR to Cancel: ");
+    scanf("%d", &pnrIn);
+
+    for (int i = 0; i < bookingCount; i++) {
+        if (bookings[i].pnr == pnrIn && bookings[i].status == 1) {
+            bookings[i].status = 0; // Mark as Cancelled
+            
+            // Refund Logic: Deduct 20% as cancellation charges
+            float refund = bookings[i].totalBill * 0.80;
+            printf("\nTicket Cancelled. Refund of INR %.2f processed.", refund);
+            
+            // Return the seat to the train array
+            for (int j = 0; j < trainCount; j++) {
+                if (trains[j].trainNo == bookings[i].trainNo) {
+                    if (strcmp(bookings[i].seatCategory, "AC") == 0) trains[j].seatsAC++;
+                    else trains[j].seatsSleeper++;
+                    break;
+                }
+            }
+            found = 1; break;
+        }
+    }
+    if (!found) printf("\nPNR not found or already cancelled.");
+}
