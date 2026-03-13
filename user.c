@@ -1,26 +1,22 @@
 #include "train.h"
 
-// The "Two-Hop" Pathfinding Logic
+// The Two-Hop Pathfinding Logic
 void searchConnecting(char* start, char* end, char* travelDate) {
     int found = 0;
     printf("\n--- Searching for Connections ---");
 
     for (int i = 0; i < trainCount; i++) {
-        // Find trains leaving from Start City
         if (strcmp(trains[i].src, start) == 0 && strcmp(trains[i].date, travelDate) == 0) {
-            
             char hub[50];
             strcpy(hub, trains[i].dest); 
 
-            // Search for a train from that Hub to the Destination
             for (int j = 0; j < trainCount; j++) {
                 if (strcmp(trains[j].src, hub) == 0 && strcmp(trains[j].dest, end) == 0 && strcmp(trains[j].date, travelDate) == 0) {
                     
-                    // Time Validation: Ensure Leg 1 arrives before Leg 2 departs
                     if (trains[i].arrTime + 30 < trains[j].depTime) { 
                         printf("\n[CONNECTION FOUND!] via %s", hub);
-                        printf("\nLeg 1: %s -> %s (Train %d)", start, hub, trains[i].trainNo);
-                        printf("\nLeg 2: %s -> %s (Train %d)", hub, end, trains[j].trainNo);
+                        printf("\nLeg 1: Train %d (%s -> %s)", trains[i].trainNo, start, hub);
+                        printf("\nLeg 2: Train %d (%s -> %s)", trains[j].trainNo, hub, end);
                         printf("\nTotal AC Fare: %.2f", (trains[i].priceAC + trains[j].priceAC));
                         printf("\n----------------------------------");
                         found = 1;
@@ -29,7 +25,7 @@ void searchConnecting(char* start, char* end, char* travelDate) {
             }
         }
     }
-    if (!found) printf("\nNo direct or connecting routes available.");
+    if (!found) printf("\nNo connecting routes available.");
 }
 
 void userMenu() {
@@ -37,27 +33,49 @@ void userMenu() {
     char s[50], d[50], dt[15];
 
     while (1) {
-        printf("\n=== USER MENU ===");
-        printf("\n1. Search Train\n2. Back\nChoice: ");
+        printf("\n=== USER PORTAL ===");
+        printf("\n1. Search Trains (Direct & Connecting)");
+        printf("\n2. Book a Ticket (Using Train Number)");
+        printf("\n3. Cancel a Ticket");
+        printf("\n4. Back to Main Menu");
+        printf("\nChoice: ");
         scanf("%d", &choice);
 
-        if (choice == 1) {
-            printf("Source: "); scanf("%s", s);
-            printf("Destination: "); scanf("%s", d);
-            printf("Date (DD/MM/YYYY): "); scanf("%s", dt);
+        switch(choice) {
+            case 1:
+                printf("Enter Source: "); scanf("%s", s);
+                printf("Enter Destination: "); scanf("%s", d);
+                printf("Enter Date (DD/MM/YYYY): "); scanf("%s", dt);
 
-            int directFound = 0;
-            for (int i = 0; i < trainCount; i++) {
-                if (strcmp(trains[i].src, s) == 0 && strcmp(trains[i].dest, d) == 0 && strcmp(trains[i].date, dt) == 0) {
-                    printf("\nDirect Train: %s (%d)", trains[i].name, trains[i].trainNo);
-                    directFound = 1;
+                int directFound = 0;
+                printf("\n--- Direct Trains ---");
+                for (int i = 0; i < trainCount; i++) {
+                    if (strcmp(trains[i].src, s) == 0 && strcmp(trains[i].dest, d) == 0 && strcmp(trains[i].date, dt) == 0) {
+                        printf("\nTrain No: %d | Name: %s | Dep: %04d", trains[i].trainNo, trains[i].name, trains[i].depTime);
+                        directFound = 1;
+                    }
                 }
-            }
 
-            if (!directFound) {
-                searchConnecting(s, d, dt); // Trigger Algorithm
-            }
-        } 
-        else if (choice == 2) return;
+                if (!directFound) {
+                    searchConnecting(s, d, dt); 
+                }
+                break;
+
+            case 2:
+                // This calls the function in booking.c
+                bookTicket(); 
+                break;
+
+            case 3:
+                // This calls the function in booking.c
+                cancelTicket();
+                break;
+
+            case 4:
+                return;
+
+            default:
+                printf("\nInvalid selection.");
+        }
     }
 }
